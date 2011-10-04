@@ -32,4 +32,12 @@ class Deprecated
   {
     echo 'staticFunction';
   }
+  
+  /**
+   * @deprecated
+   */
+  public function deprecatedFunctionWithParameters( $param1 )
+  {
+  	echo $param1;
+  }
 }

@@ -109,10 +109,9 @@ class AnnotationStrategy implements Strategy
 
   private function createNewClass()
   {
-    $annotations = $this->annotations;
     $classTokenized = $this->getTokenizedClass();
 
-    if (count($annotations) == 0)
+    if (count( $this->annotations) == 0)
     {
       $this->tokenToClass($classTokenized);
     }
@@ -131,7 +130,7 @@ class AnnotationStrategy implements Strategy
           elseif ($classTokenized[$i][0] == T_FUNCTION)
           {
             $classContent .= $classTokenized[$i][1];
-            $classTokenized[$i + 2][1] .= '_ANNOTETED_IGONORE_SUFFIX_ON_BUGFIXING';
+            $classTokenized[$i + 2][1] .= '_ANNOTETED_IGNORE_SUFFIX_ON_BUGFIXING';
           }
           else
           {
@@ -144,23 +143,26 @@ class AnnotationStrategy implements Strategy
         }
       }
 
-      foreach ($annotations as $functionName => $functionAnnotations)
+      foreach ( $this->annotations as $functionName => $functionAnnotations)
       {
         // @todo static, public, abstract, parameter ...
         $classContent .= "\n  public function " . $functionName . "( )\n  { ";
+        $classContent .= "\n    \$parameters = func_get_args();";
         foreach ($functionAnnotations['annotation'] as $functionAnnotation)
         {
           $classContent .= "\n    \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::triggerHook('" . get_class($functionAnnotation) . "', \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::HOOK_TYPE_PRE);";
         }
 
-        if ($functionAnnotations['method']->isAbstract())
+        if ($functionAnnotations['method']->isStatic())
         {
-          $classContent .= "\n    \$result = " . 'self::' . $functionName . '_ANNOTETED_IGONORE_SUFFIX_ON_BUGFIXING();';
+        	$object = '"'.$this->classname.'"';
         }
         else
         {
-          $classContent .= "\n    \$result = " . '$this->' . $functionName . '_ANNOTETED_IGONORE_SUFFIX_ON_BUGFIXING();';
+        	$object = '$this';
         }
+        
+        $classContent .= "\n    \$result = call_user_func_array( array( " . $object . ", '".$functionName . "_ANNOTETED_IGNORE_SUFFIX_ON_BUGFIXING'), \$parameters);";
 
         foreach ($functionAnnotations['annotation'] as $functionAnnotation)
         {
@@ -171,7 +173,6 @@ class AnnotationStrategy implements Strategy
       }
 
       $classContent .= "\n}";
-
       eval($classContent);
     }
   }

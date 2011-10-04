@@ -30,3 +30,4 @@ $testObject->staticDeprecatedFunction();
 echo "\n";
 $testObject->functionCallingDeprecatedProtected();
 echo "\n";
+$testObject->deprecatedFunctionWithParameters('parameter1');
