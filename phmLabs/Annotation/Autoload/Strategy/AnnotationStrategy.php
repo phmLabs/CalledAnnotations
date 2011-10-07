@@ -26,7 +26,7 @@ class AnnotationStrategy implements Strategy
       }
       elseif ($classTokenized[$i][0] == T_CLASS)
       {
-        // alle "unwichtigen" Tokens rauswerfen
+        // @todo alle "unwichtigen" Tokens rauswerfen
         $className = $classTokenized[$i + 2][1];
         $classTokenized[$i + 2][1] = $className . '_phmAnnotation';
       }
@@ -48,7 +48,7 @@ class AnnotationStrategy implements Strategy
 
   private function getAnnotations($classname)
   {
-    // abstrakte methoden können nicht annotiert werden
+    // @todo abstrakte methoden können nicht annotiert werden
     $reflectedListener = new ReflectionClass($classname);
     $methods = $reflectedListener->getMethods();
     $this->annotationReader = new AnnotationReader();
@@ -72,6 +72,7 @@ class AnnotationStrategy implements Strategy
     else
     {
       $classContent = '';
+      // @todo nur methoden, die auch überschrieben werden sollen
       for ($i = 0; $i < count($classTokenized); $i ++)
       {
         if (is_array($classTokenized[$i]))
@@ -98,7 +99,7 @@ class AnnotationStrategy implements Strategy
 
       foreach ($annotations as $functionName => $functionAnnotations)
       {
-        // static, public, abstract, parameter ...
+        // @todo static, public, abstract, parameter ...
         $classContent .= "\n  public function " . $functionName . "( )\n  { ";
         foreach ($functionAnnotations['annotation'] as $functionAnnotation)
         {

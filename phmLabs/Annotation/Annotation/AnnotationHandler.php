@@ -11,7 +11,7 @@ class AnnotationHandler
 
   public static function registerAnnotation($annotationName)
   {
-    // in methode packen
+    // @todo in methode packen
     self::$registeredAnnotations[$annotationName] = '';
     $deprecatedAnnotation = CallableAnnotation::createAnnotation($annotationName);
   }
