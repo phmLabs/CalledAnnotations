@@ -1,5 +1,7 @@
 <?php
 
+// @todo add persistenz layer (als dekorator)
+
 namespace phmLabs\Annotation\Autoload\Strategy;
 
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -8,16 +10,39 @@ use ReflectionClass, ReflectionMethod;
 
 class AnnotationStrategy implements Strategy
 {
-  private $annotations = array ();
+  const TMP_CLASS_POSTFIX = '_phmCalledAnnotation';
 
+  private $annotations = array ();
+  private $classname;
+
+  /**
+   * This method is registred as spl_autoload function using the phmLabs autoload class.
+   *
+   * @param string $classname
+   */
   public function autoload($classname)
   {
-    $filename = __DIR__ . '/../../../../' . str_replace('\\', DIRECTORY_SEPARATOR, $classname) . '.php';
+    $this->classname = $classname;
+    $this->createTmpClass();
+    $this->extractAnnotations();
+    $this->createNewClass();
+  }
 
-    $classContent = file_get_contents($filename);
-    $classTokenized = token_get_all($classContent);
-    $originalClassTokenized = $classTokenized;
+  private function getFilename()
+  {
+    // @todo könnte noch verfeinert werden. siehe sf2, dort werden pfade zum namespace noch registriert
+    return __DIR__ . '/../../../../' . str_replace('\\', DIRECTORY_SEPARATOR, $this->classname) . '.php';
+  }
 
+  private function getTokenizedClass()
+  {
+    $classContent = file_get_contents($this->getFilename());
+    return token_get_all($classContent);
+  }
+
+  private function createTmpClass()
+  {
+    $classTokenized = $this->getTokenizedClass();
     for ($i = 0; $i < count($classTokenized); $i ++)
     {
       if ($classTokenized[$i][0] == T_OPEN_TAG)
@@ -28,22 +53,15 @@ class AnnotationStrategy implements Strategy
       {
         // @todo alle "unwichtigen" Tokens rauswerfen
         $className = $classTokenized[$i + 2][1];
-        $classTokenized[$i + 2][1] = $className . '_phmAnnotation';
-      }
-      elseif (($classTokenized[$i][0] == T_NAMESPACE))
-      {
-        $j = 2;
-        $namespace = '';
-        while (is_array($classTokenized[$i + $j]) && $classTokenized[$i + $j][0] != T_WHITESPACE)
-        {
-          $namespace .= $classTokenized[$i + $j][1];
-          $j ++;
-        }
+        $classTokenized[$i + 2][1] = $className . self::TMP_CLASS_POSTFIX;
       }
     }
     $this->tokenToClass($classTokenized);
-    $annotations = $this->getAnnotations($namespace . '\\' . $className . '_phmAnnotation');
-    $this->createNewClass($originalClassTokenized, $annotations);
+  }
+
+  private function extractAnnotations()
+  {
+    $this->annotations = $this->getAnnotations($this->classname . self::TMP_CLASS_POSTFIX);
   }
 
   private function getAnnotations($classname)
@@ -63,8 +81,11 @@ class AnnotationStrategy implements Strategy
     return $annotations;
   }
 
-  private function createNewClass($classTokenized, $annotations)
+  private function createNewClass()
   {
+    $annotations = $this->annotations;
+    $classTokenized = $this->getTokenizedClass();
+
     if (count($annotations) == 0)
     {
       $this->tokenToClass($classTokenized);
