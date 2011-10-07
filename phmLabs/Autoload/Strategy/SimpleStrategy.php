@@ -7,6 +7,9 @@ class SimpleStrategy implements Strategy
   public function autoload($classname)
   {
     $filename = (__DIR__ . '/../../../' . str_replace('\\', DIRECTORY_SEPARATOR, $classname) . '.php');
-    include_once $filename;
+    if (file_exists($filename))
+    {
+      include_once $filename;
+    }
   }
 }

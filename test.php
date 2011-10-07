@@ -23,4 +23,10 @@ AnnotationHandler::registerCallback('deprecated', AnnotationHandler::HOOK_TYPE_P
 $autoloader->registerNamespace('\phmLabs\Annotation\Example', $annotationStrategy);
 
 $testObject = new Deprecated();
+
 $testObject->deprecatedFunction();
+echo "\n";
+$testObject->staticDeprecatedFunction();
+echo "\n";
+$testObject->functionCallingDeprecatedProtected();
+echo "\n";

@@ -4,7 +4,7 @@ namespace phmLabs\Annotation\Annotation;
 
 use Doctrine\Common\Annotations\Annotation as DoctrineAbstractAnnotation;
 
-class CallableAnnotation extends DoctrineAbstractAnnotation implements Annotation
+class CallableAnnotation extends DoctrineAbstractAnnotation
 {
   private static $callbacks;
 
@@ -19,19 +19,5 @@ class CallableAnnotation extends DoctrineAbstractAnnotation implements Annotatio
     $className = __NAMESPACE__ . '\\' . $name;
 
     return new $className(array());
-  }
-
-  public function addCallback($callback, $hookType)
-  {
-    self::$callbacks[$hookType][] = $callback;
-  }
-
-  public function call($hookType)
-  {
-    $callbacks = self::$callbacks[$hookType];
-    foreach ($callbacks as $callback)
-    {
-      $callback();
-    }
   }
 }

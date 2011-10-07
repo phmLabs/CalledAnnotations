@@ -2,6 +2,7 @@
 
 // @todo add persistenz layer (als dekorator)
 
+
 namespace phmLabs\Annotation\Autoload\Strategy;
 
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -10,9 +11,25 @@ use ReflectionClass, ReflectionMethod;
 
 class AnnotationStrategy implements Strategy
 {
+  /**
+   * The classname decorator for the temporary created class
+   *
+   * @var string
+   */
   const TMP_CLASS_POSTFIX = '_phmCalledAnnotation';
 
+  /**
+   * The found annotations
+   *
+   * @var mixed[]
+   */
   private $annotations = array ();
+
+  /**
+   * The name of the class to be autoloaded
+   *
+   * @var string
+   */
   private $classname;
 
   /**
@@ -28,12 +45,22 @@ class AnnotationStrategy implements Strategy
     $this->createNewClass();
   }
 
+  /**
+   * Returns the filename according to the given classname (autoload)
+   *
+   * @return string
+   */
   private function getFilename()
   {
     // @todo könnte noch verfeinert werden. siehe sf2, dort werden pfade zum namespace noch registriert
     return __DIR__ . '/../../../../' . str_replace('\\', DIRECTORY_SEPARATOR, $this->classname) . '.php';
   }
 
+  /**
+   * Returns the tokenized class
+   *
+   * @return mixed[] the tokens
+   */
   private function getTokenizedClass()
   {
     $classContent = file_get_contents($this->getFilename());
@@ -66,7 +93,6 @@ class AnnotationStrategy implements Strategy
 
   private function getAnnotations($classname)
   {
-    // @todo abstrakte methoden können nicht annotiert werden
     $reflectedListener = new ReflectionClass($classname);
     $methods = $reflectedListener->getMethods();
     $this->annotationReader = new AnnotationReader();
@@ -124,14 +150,21 @@ class AnnotationStrategy implements Strategy
         $classContent .= "\n  public function " . $functionName . "( )\n  { ";
         foreach ($functionAnnotations['annotation'] as $functionAnnotation)
         {
-          $classContent .= "\n    \phmLabs\Annotation\Annotation\AnnotationHandler::triggerHook('" . get_class($functionAnnotation) . "', \phmLabs\Annotation\Annotation\AnnotationHandler::HOOK_TYPE_PRE);";
+          $classContent .= "\n    \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::triggerHook('" . get_class($functionAnnotation) . "', \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::HOOK_TYPE_PRE);";
         }
 
-        $classContent .= "\n    \$result = " . '$this->' . $functionName . '_ANNOTETED_IGONORE_SUFFIX_ON_BUGFIXING();';
+        if ($functionAnnotations['method']->isAbstract())
+        {
+          $classContent .= "\n    \$result = " . 'self::' . $functionName . '_ANNOTETED_IGONORE_SUFFIX_ON_BUGFIXING();';
+        }
+        else
+        {
+          $classContent .= "\n    \$result = " . '$this->' . $functionName . '_ANNOTETED_IGONORE_SUFFIX_ON_BUGFIXING();';
+        }
 
         foreach ($functionAnnotations['annotation'] as $functionAnnotation)
         {
-          $classContent .= "\n    \phmLabs\Annotation\Annotation\AnnotationHandler::triggerHook('" . get_class($functionAnnotation) . "', \phmLabs\Annotation\Annotation\AnnotationHandler::HOOK_TYPE_POST);";
+          $classContent .= "\n    \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::triggerHook('" . get_class($functionAnnotation) . "', \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::HOOK_TYPE_POST);";
         }
         $classContent .= "\n    return \$result;";
         $classContent .= "\n  }";
