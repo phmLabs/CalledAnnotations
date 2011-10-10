@@ -121,12 +121,6 @@ class AnnotationStrategy implements Strategy
     $tmpClass->evaluate();
   }
 
-  private function extractAnnotations($classname)
-  {
-    $this->annotations = $this->getAnnotations($this->getTmpClassName($classname),
-                                               NamespaceExtractor::fromClassname($classname));
-  }
-
   private function getAnnotations($classname, $namespace)
   {
     $reflectedListener = new ReflectionClass($namespace. "\\" .$classname);
@@ -188,6 +182,7 @@ class AnnotationStrategy implements Strategy
       $classContent .= "\n    \$parameters = func_get_args();";
       foreach ( $functionAnnotations['annotation'] as $functionAnnotation )
       {
+        // @todo named parameters
         $classContent .= "\n    \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::triggerHook('" . get_class($functionAnnotation) . "', \\phmLabs\\Annotation\\Annotation\\AnnotationHandler::HOOK_TYPE_PRE, \$parameters);";
       }
 
