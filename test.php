@@ -6,6 +6,11 @@ use phmLabs\Annotation\Autoload\Strategy\AnnotationStrategy;
 use phmLabs\Autoload\Strategy\SimpleStrategy;
 use phmLabs\Autoload\Autoloader;
 
+error_reporting(E_ALL);
+ini_set( 'display_errors', 1);
+
+date_default_timezone_set('Europe/Berlin');
+
 include_once __DIR__.'/phmLabs/Autoload/Autoloader.php';
 
 $autoloader = new Autoloader();

@@ -2,7 +2,7 @@
 
 namespace phmLabs\Annotation\Example;
 
-class Deprecated
+class Deprecated implements DeprecatedInterface
 {
   /**
    * @deprecated
@@ -32,7 +32,7 @@ class Deprecated
   {
     echo 'staticFunction';
   }
-  
+
   /**
    * @deprecated
    */
